@@ -123,6 +123,12 @@ For a more detailed setup and running guide, see:
 docs/RUNNING.md
 ```
 
+For a clear list of required and optional environments, see:
+
+```text
+docs/INSTALLATION_REQUIREMENTS.md
+```
+
 Windows users should also read:
 
 ```text

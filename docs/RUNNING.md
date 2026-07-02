@@ -22,6 +22,12 @@ For Windows-specific setup notes, read:
 docs/WINDOWS_ADAPTATION.md
 ```
 
+For a complete dependency matrix, read:
+
+```text
+docs/INSTALLATION_REQUIREMENTS.md
+```
+
 ## 1. Clone And Enter The Project
 
 ```bash
