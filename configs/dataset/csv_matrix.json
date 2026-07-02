@@ -1,0 +1,6 @@
+{
+  "path": "data/spectra.csv",
+  "sample_id_column": "sample_id",
+  "target_column": "target"
+}
+

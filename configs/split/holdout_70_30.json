@@ -1,0 +1,7 @@
+{
+  "method": "holdout",
+  "test_size": 0.3,
+  "stratify": true,
+  "seed": 42
+}
+

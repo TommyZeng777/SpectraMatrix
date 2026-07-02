@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SpectraMatrix</title>
+    <link rel="icon" href="/static/favicon.ico?v=20260701-logo-1" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png?v=20260701-logo-1" />
+    <link rel="icon" type="image/png" href="/static/favicon.png?v=20260701-logo-1" />
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v=20260701-logo-1" />
+    <link rel="stylesheet" href="/static/vendor/tabler.min.css" />
+    <link rel="stylesheet" href="/static/vendor/tabler-icons.min.css" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260702-matrix-fixed-chip-1" />
+  </head>
+  <body class="theme-light">
+    <aside class="spectral-sidebar" aria-label="Workbench sections">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <i class="ti ti-wave-sine"></i>
+        </div>
+        <div>
+          <div class="brand-name">SpectraMatrix</div>
+          <div class="brand-subtitle" data-i18n="brand.subtitle">本地工作台</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" type="button" data-view-target="data">
+          <i class="ti ti-database-import" aria-hidden="true"></i>
+          <span data-i18n="nav.data">数据导入</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="matrix">
+          <i class="ti ti-layout-grid-add" aria-hidden="true"></i>
+          <span data-i18n="nav.matrix">模型训练设计</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="queue">
+          <i class="ti ti-player-play" aria-hidden="true"></i>
+          <span data-i18n="nav.queue">模型训练台</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="results">
+          <i class="ti ti-chart-dots" aria-hidden="true"></i>
+          <span data-i18n="nav.results">结果筛选</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="workshop">
+          <i class="ti ti-tools" aria-hidden="true"></i>
+          <span data-i18n="nav.workshop">模型工坊</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="outputs">
+          <i class="ti ti-chart-scatter" aria-hidden="true"></i>
+          <span data-i18n="nav.outputs">模型成果</span>
+        </button>
+      </nav>
+      <section class="sidebar-project" aria-label="Project file">
+        <input id="project-file-input" type="file" accept=".spectramatrix.json,application/json" hidden />
+        <div class="sidebar-project-heading">
+          <span data-i18n="project.sidebarTitle">工作区工程</span>
+          <i class="ti ti-folder-code" aria-hidden="true"></i>
+        </div>
+        <div class="project-dropzone sidebar-project-dropzone" id="project-dropzone" role="button" tabindex="0">
+          <i class="ti ti-file-import project-dropzone-icon" aria-hidden="true"></i>
+          <div>
+            <strong data-i18n="project.dropTitle">打开或继续工程</strong>
+            <p data-i18n="project.dropHint">拖入 .spectramatrix.json，恢复数据、训练设计、队列和结果。</p>
+            <span class="project-selected-file" id="project-selected-file" data-i18n="project.noFile">尚未选择工程</span>
+          </div>
+        </div>
+        <div class="project-actions sidebar-project-actions">
+          <button class="btn btn-primary" id="project-browse" type="button">
+            <i class="ti ti-folder-open button-icon" aria-hidden="true"></i>
+            <span data-i18n="project.choose">打开</span>
+          </button>
+          <button class="btn btn-outline-secondary" id="project-open-demo" type="button">
+            <i class="ti ti-sparkles button-icon" aria-hidden="true"></i>
+            <span data-i18n="project.openDemo">打开示例</span>
+          </button>
+          <button class="btn btn-outline-secondary" id="project-save" type="button">
+            <i class="ti ti-device-floppy button-icon" aria-hidden="true"></i>
+            <span data-i18n="project.save">保存</span>
+          </button>
+          <button class="btn btn-outline-secondary" id="project-save-as" type="button">
+            <i class="ti ti-copy-plus button-icon" aria-hidden="true"></i>
+            <span data-i18n="project.saveAs">另存为</span>
+          </button>
+        </div>
+        <details class="advanced-fields project-advanced sidebar-project-advanced">
+          <summary data-i18n="project.advancedPath">高级路径</summary>
+          <div class="project-path-row">
+            <label>
+              <span data-i18n="project.file">工程文件路径</span>
+              <input class="form-control" id="project-file-path" autocomplete="off" />
+            </label>
+            <button class="btn btn-outline-secondary" id="project-open" type="button">
+              <i class="ti ti-route button-icon" aria-hidden="true"></i>
+              <span data-i18n="project.openByPath">按路径打开</span>
+            </button>
+          </div>
+        </details>
+        <p class="project-status" id="project-status" data-i18n="project.autoSaveReady">工程会自动保存。</p>
+      </section>
+      <div class="sidebar-footer">
+        <span class="status-dot" id="api-dot"></span>
+        <span id="api-status">Checking API</span>
+      </div>
+    </aside>
+
+    <main class="app">
+      <header class="page-header d-print-none topbar">
+        <div>
+          <h1 class="page-title" data-i18n="app.title">SpectraMatrix 光谱模型训练平台</h1>
+          <p>
+            <span data-i18n="app.workspace">工作区</span>
+            <span id="root-path" class="path-pill">Loading...</span>
+          </p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-outline-secondary" id="language-toggle" type="button">English</button>
+          <button class="btn btn-outline-secondary" id="refresh-defaults" type="button">
+            <i class="ti ti-refresh button-icon" aria-hidden="true"></i>
+            <span data-i18n="action.defaults">默认配置</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-data" data-view="data" aria-label="Dataset workspace">
+        <div class="workspace-hero">
+          <div>
+            <h2 data-i18n="data.title">导入并检查数据</h2>
+            <p data-i18n="data.subtitle">下载模板，准备两张标准 CSV，拖入后自动检查 sample_link_code、PPM 监督值和可用训练数据。</p>
+          </div>
+          <button class="btn btn-primary" id="inspect-current" type="button">
+            <i class="ti ti-check button-icon" aria-hidden="true"></i>
+            <span data-i18n="data.inspectCurrent">检查当前数据</span>
+          </button>
+        </div>
+
+        <div class="template-actions" aria-label="CSV templates">
+          <button class="btn btn-primary" id="import-demo-dataset" type="button">
+            <i class="ti ti-database-import button-icon" aria-hidden="true"></i>
+            <span data-i18n="import.demoDataset">导入演示数据集</span>
+          </button>
+          <a class="btn btn-outline-secondary" href="/api/templates/spectra" download>
+            <i class="ti ti-download button-icon" aria-hidden="true"></i>
+            <span data-i18n="import.downloadSpectraTemplate">下载光谱数据模板</span>
+          </a>
+          <a class="btn btn-outline-secondary" href="/api/templates/supervision" download>
+            <i class="ti ti-download button-icon" aria-hidden="true"></i>
+            <span data-i18n="import.downloadSupervisionTemplate">下载监督数据模板</span>
+          </a>
+        </div>
+
+        <div class="metric-grid" id="dataset-cards">
+          <div class="metric-card">
+            <span data-i18n="metric.samples">样品</span>
+            <strong id="metric-samples">--</strong>
+          </div>
+          <div class="metric-card">
+            <span data-i18n="metric.wavelengths">波长点</span>
+            <strong id="metric-wavelengths">--</strong>
+          </div>
+          <div class="metric-card">
+            <span data-i18n="metric.windows">窗口</span>
+            <strong id="metric-windows">--</strong>
+          </div>
+          <div class="metric-card">
+            <span data-i18n="metric.targets">目标列</span>
+            <strong id="metric-targets">--</strong>
+          </div>
+        </div>
+
+        <div class="import-workflow" aria-label="CSV import workflow">
+          <div class="dropzone import-slot" id="spectra-dropzone" data-import-slot="spectra">
+            <input id="spectra-file-input" type="file" accept=".csv,.npz" hidden />
+            <div class="drop-icon" aria-hidden="true"><i class="ti ti-wave-sine"></i></div>
+            <div>
+              <h3 data-i18n="import.spectraTitle">光谱矩阵</h3>
+              <p data-i18n="import.spectraHelp">拖入光谱宽表 CSV，或已有的光谱矩阵 NPZ。</p>
+              <strong class="selected-file" id="spectra-selected" data-i18n="import.notSelected">尚未选择</strong>
+            </div>
+            <button class="btn btn-outline-secondary" id="spectra-browse" type="button" data-i18n="import.chooseSpectra">选择光谱文件</button>
+          </div>
+          <div class="dropzone import-slot" id="supervision-dropzone" data-import-slot="supervision">
+            <input id="supervision-file-input" type="file" accept=".csv" hidden />
+            <div class="drop-icon supervision" aria-hidden="true"><i class="ti ti-clipboard-data"></i></div>
+            <div>
+              <h3 data-i18n="import.supervisionTitle">监督标签</h3>
+              <p data-i18n="import.supervisionHelp">拖入监督数值 CSV，典型列为 sample_link_code 与 ppm_mg_kg。</p>
+              <strong class="selected-file" id="supervision-selected" data-i18n="import.notSelected">尚未选择</strong>
+            </div>
+            <button class="btn btn-outline-secondary" id="supervision-browse" type="button" data-i18n="import.chooseSupervision">选择监督文件</button>
+          </div>
+          <div class="import-action-row">
+            <p id="import-selection-status" data-i18n="import.waitingPair">请选择光谱矩阵和监督标签两张文件。</p>
+            <button class="btn btn-primary" id="import-start" type="button" disabled>
+              <i class="ti ti-file-import button-icon" aria-hidden="true"></i>
+              <span data-i18n="import.start">导入并检查</span>
+            </button>
+          </div>
+        </div>
+        <div class="import-summary" id="import-summary">
+          <p data-i18n="import.empty">尚未导入文件。</p>
+        </div>
+
+        <section class="card panel dataset-lock-panel" aria-label="Dataset code">
+          <div class="panel-heading">
+            <h2 data-i18n="datasetCode.title">确认训练数据</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="datasetCode.tag">必填</span>
+          </div>
+          <p class="panel-note" data-i18n="datasetCode.note">导入检查通过后，为这批数据填写一个训练数据代号。这个代号会传递到模型训练设计、训练台、结果筛选、模型工坊和模型成果。</p>
+          <div class="dataset-code-row">
+            <label>
+              <span data-i18n="datasetCode.label">训练数据代号</span>
+              <input class="form-control" id="dataset-code-input" placeholder="YAM-3600iPlus-PPM-154" />
+            </label>
+            <button class="btn btn-primary" id="dataset-confirm" type="button" disabled>
+              <i class="ti ti-lock-check button-icon" aria-hidden="true"></i>
+              <span data-i18n="datasetCode.confirm">确认使用此数据</span>
+            </button>
+          </div>
+          <p class="check-message" id="dataset-lock-status" data-i18n="datasetCode.waiting">请先导入两张模板 CSV。</p>
+        </section>
+
+        <form class="card panel slim-panel" id="dataset-form">
+          <div class="panel-heading">
+            <h2 data-i18n="datasetInspect.title">数据检查结果</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="datasetInspect.tag">自动</span>
+          </div>
+          <p class="check-message" id="dataset-check-message" data-i18n="datasetInspect.idle">导入两张 CSV 后会自动检查样品数、波长点和目标列。</p>
+          <button class="btn btn-primary" type="submit">
+            <i class="ti ti-check button-icon" aria-hidden="true"></i>
+            <span data-i18n="datasetInspect.run">重新检查</span>
+          </button>
+          <input name="config" type="hidden" />
+          <input name="out" type="hidden" />
+        </form>
+      </section>
+
+      <section class="view" id="view-matrix" data-view="matrix" aria-label="Matrix builder">
+        <form class="card panel focus-panel" id="matrix-form">
+          <div class="panel-heading">
+            <h2 data-i18n="matrix.title">模型训练设计</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="matrix.tag">训练项目</span>
+          </div>
+          <div class="context-strip" id="design-dataset-context">
+            <div>
+              <span data-i18n="context.dataset">当前训练数据</span>
+              <strong id="active-dataset-code">尚未确认</strong>
+            </div>
+            <button class="btn btn-outline-secondary" type="button" data-view-jump="data">
+              <i class="ti ti-switch-2 button-icon" aria-hidden="true"></i>
+              <span data-i18n="context.changeData">更换数据</span>
+            </button>
+          </div>
+          <p class="panel-note" data-i18n="matrix.note">在这里完成训练环境、训练目标、数据划分和模型可选参数设置，然后生成可执行训练项目。</p>
+          <div class="design-section">
+            <div class="section-title">
+              <h3 data-i18n="design.envTitle">训练环境</h3>
+              <button class="btn btn-outline-secondary" type="button" id="env-check">
+                <i class="ti ti-stethoscope button-icon" aria-hidden="true"></i>
+                <span data-i18n="design.envCheck">检查训练环境</span>
+              </button>
+            </div>
+            <div class="option-grid four">
+              <label>
+                <span data-i18n="design.framework">训练框架</span>
+                <select class="form-select" id="training-framework">
+                  <option value="pytorch">PyTorch</option>
+                  <option value="tensorflow" disabled>TensorFlow（实验性）</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="design.device">运行设备</span>
+                <select class="form-select" id="training-device">
+                  <option>自动选择</option>
+                  <option>CPU</option>
+                  <option>Apple MPS</option>
+                  <option>NVIDIA CUDA</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="design.precision">训练精度</span>
+                <select class="form-select" id="training-precision">
+                  <option>FP32</option>
+                  <option>混合精度</option>
+                </select>
+              </label>
+              <label>
+                <span data-i18n="design.exportTarget">导出目标</span>
+                <select class="form-select" id="training-export-target">
+                  <option>本机 macOS</option>
+                  <option>Linux GPU</option>
+                  <option>Windows</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="design-section">
+            <div class="section-title">
+              <h3 data-i18n="design.targetTitle">训练目标</h3>
+              <span class="muted-note" data-i18n="design.targetSource">监督数值：ppm_mg_kg</span>
+            </div>
+            <div class="target-layout">
+              <div class="target-card-list">
+                <label class="target-card active" data-target-card="regression">
+                  <input type="checkbox" data-target-toggle="regression" checked />
+                  <strong data-i18n="design.regression">PPM 回归预测</strong>
+                  <span data-i18n="design.regressionNote">直接预测连续 PPM。</span>
+                </label>
+                <label class="target-card" data-target-card="binary">
+                  <input type="checkbox" data-target-toggle="binary" />
+                  <strong data-i18n="design.binary">二分类筛查</strong>
+                  <span data-i18n="design.binaryNote">由 PPM 阈值自动生成。</span>
+                </label>
+                <label class="target-card" data-target-card="tri">
+                  <input type="checkbox" data-target-toggle="tri" />
+                  <strong data-i18n="design.tri">三分类风险分层</strong>
+                  <span data-i18n="design.triNote">由 PPM 范围自动生成。</span>
+                </label>
+              </div>
+              <div class="rule-panel">
+                <h3 data-i18n="design.ruleTitle">分类判别标准</h3>
+                <p class="empty-hint" id="target-rule-empty" data-i18n="design.ruleEmpty" hidden>当前只做连续值回归，不需要设置分类阈值。</p>
+                <div class="rule-row" data-rule-section="binary">
+                  <label>
+                    <span data-i18n="design.binaryThreshold">二分类阈值</span>
+                    <input class="form-control" id="binary-threshold" type="number" value="500" />
+                  </label>
+                  <span data-i18n="design.binaryRule">未超标：ppm &lt; 阈值；超标：ppm ≥ 阈值</span>
+                </div>
+                <div class="rule-row three" data-rule-section="tri">
+                  <label>
+                    <span data-i18n="design.lowMax">低风险上限</span>
+                    <input class="form-control" id="tri-low-max" type="number" value="500" />
+                  </label>
+                  <label>
+                    <span data-i18n="design.midMax">中风险上限</span>
+                    <input class="form-control" id="tri-mid-max" type="number" value="1000" />
+                  </label>
+                  <span data-i18n="design.triRule">低风险 / 中风险 / 高风险自动按范围生成。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="design-section">
+            <div class="section-title">
+              <h3 data-i18n="design.splitTitle">数据划分</h3>
+              <span class="muted-note" data-i18n="design.splitNote">按 sample_link_code 分组划分，避免同一样品泄漏。</span>
+            </div>
+            <div class="split-mode-list" id="split-mode-list" aria-label="Data split mode">
+              <label class="split-mode active" data-split-mode-card="holdout">
+                <input type="radio" name="split_mode" value="holdout" checked />
+                <strong data-i18n="design.splitHoldout">训练集 + 验证集 + 独立测试集</strong>
+                <span data-i18n="design.splitHoldoutNote">显式划出验证集；不再额外设置交叉验证折。</span>
+              </label>
+              <label class="split-mode" data-split-mode-card="cv">
+                <input type="radio" name="split_mode" value="cv" />
+                <strong data-i18n="design.splitCv">训练集内交叉验证 + 独立测试集</strong>
+                <span data-i18n="design.splitCvNote">不单独划验证集；在训练集内部设置 K 折交叉验证。</span>
+              </label>
+              <label class="split-mode" data-split-mode-card="train_only">
+                <input type="radio" name="split_mode" value="train_only" />
+                <strong data-i18n="design.splitTrainOnly">仅训练集内交叉验证</strong>
+                <span data-i18n="design.splitTrainOnlyNote">不划独立测试集，适合先快速探索。</span>
+              </label>
+            </div>
+            <div class="split-blocks">
+              <div class="split-block locked">
+                <strong data-i18n="design.trainSet">训练集</strong>
+                <label><span data-i18n="design.ratio">比例</span><input class="form-control" id="split-train-ratio" type="number" value="64" /></label>
+              </div>
+              <div class="split-block" data-split-block="validation">
+                <strong data-i18n="design.valSet">验证集</strong>
+                <label><span data-i18n="design.ratio">比例</span><input class="form-control" id="split-val-ratio" type="number" value="16" /></label>
+                <small data-i18n="design.valDisabled">交叉验证模式下不单独设置验证集。</small>
+              </div>
+              <div class="split-block" data-split-block="test">
+                <strong data-i18n="design.testSet">独立测试集</strong>
+                <label><span data-i18n="design.ratio">比例</span><input class="form-control" id="split-test-ratio" type="number" value="20" /></label>
+                <small data-i18n="design.testDisabled">仅训练集模式下不划独立测试集。</small>
+              </div>
+            </div>
+            <div class="cv-fold-panel" id="cv-fold-panel" hidden>
+              <div>
+                <strong data-i18n="design.cvFoldTitle">训练集内交叉验证折数</strong>
+                <span data-i18n="design.cvFoldNote">这个参数属于数据划分，不属于模型结构参数。</span>
+              </div>
+              <div class="level-card-list" id="cv-fold-options" aria-label="CV fold options">
+                <button class="level-card" type="button" data-cv-fold="2" aria-pressed="false">2</button>
+                <button class="level-card" type="button" data-cv-fold="3" aria-pressed="false">3</button>
+                <button class="level-card active" type="button" data-cv-fold="5" aria-pressed="true">5</button>
+                <button class="level-card" type="button" data-cv-fold="10" aria-pressed="false">10</button>
+              </div>
+            </div>
+          </div>
+          <div class="matrix-steps" aria-label="Matrix workflow">
+            <div>
+              <strong data-i18n="matrix.step1">1. 选择可选参数</strong>
+              <span data-i18n="matrix.step1Note">每个参数放入候选值</span>
+            </div>
+            <div>
+              <strong data-i18n="matrix.step2">2. 展开组合</strong>
+              <span data-i18n="matrix.step2Note">候选值做笛卡尔组合</span>
+            </div>
+            <div>
+              <strong data-i18n="matrix.step3">3. 生成任务</strong>
+              <span data-i18n="matrix.step3Note">每个组合输出一个脚本任务</span>
+            </div>
+          </div>
+          <div class="factorial-editor" aria-label="Full factorial design">
+            <div class="factorial-editor-head">
+              <div>
+                <div class="mini-heading" data-i18n="factorial.title">模型可选参数</div>
+                <p data-i18n="factorial.note">从预设参数库选择因子和可选参数，系统自动穷举所有组合。</p>
+              </div>
+              <div class="factorial-total">
+                <span data-i18n="factorial.draftTotal">草稿组合数</span>
+                <strong id="factorial-draft-total">--</strong>
+              </div>
+            </div>
+            <div class="factorial-mode-list" id="factorial-mode-list" aria-label="Recommended design modes"></div>
+            <div class="factorial-table" role="table" aria-label="Factor levels">
+              <div class="factorial-row factorial-header" role="row">
+                <span data-i18n="factorial.factor">因子（可调参数）</span>
+                <span data-i18n="factorial.preset">推荐参数组</span>
+                <span data-i18n="factorial.levels">可选参数（选中才参与）</span>
+                <span data-i18n="factorial.count">数量</span>
+                <span></span>
+              </div>
+              <div id="factorial-rows"></div>
+            </div>
+            <div class="factorial-actions">
+              <button class="btn btn-outline-secondary" id="factorial-add" type="button">
+                <i class="ti ti-plus button-icon" aria-hidden="true"></i>
+                <span data-i18n="factorial.add">添加预设因子</span>
+              </button>
+            </div>
+            <p class="check-message" id="factorial-status" data-i18n="factorial.idle">当前选择会在生成或导出时自动生效。</p>
+          </div>
+          <div class="matrix-preview" id="matrix-preview">
+            <div class="matrix-total-card">
+              <span data-i18n="matrix.totalLabel">组合总数</span>
+              <strong id="matrix-total">--</strong>
+              <small id="matrix-formula" data-i18n="matrix.previewIdle">正在读取参数矩阵...</small>
+            </div>
+            <div class="matrix-preview-body">
+              <div>
+                <div class="mini-heading" data-i18n="matrix.gridTitle">可调参数候选值</div>
+                <div class="matrix-grid-list" id="matrix-grid-list"></div>
+              </div>
+              <div>
+                <div class="mini-heading" data-i18n="matrix.fixedTitle">固定参数</div>
+                <div class="fixed-param-list" id="matrix-fixed-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="workflow-actions matrix-create-actions">
+            <button class="btn btn-primary" type="submit">
+              <i class="ti ti-plus button-icon" aria-hidden="true"></i>
+              <span data-i18n="matrix.create">生成训练矩阵</span>
+            </button>
+            <button class="btn btn-outline-secondary" id="matrix-export" type="button">
+              <i class="ti ti-package-export button-icon" aria-hidden="true"></i>
+              <span data-i18n="matrix.export">导出训练矩阵文件包</span>
+            </button>
+          </div>
+          <p class="check-message" id="matrix-status" data-i18n="matrix.idle">尚未创建训练任务。</p>
+          <div class="workflow-result" id="matrix-result" hidden>
+            <strong id="matrix-result-title"></strong>
+            <p id="matrix-result-detail"></p>
+            <div class="mini-heading" data-i18n="matrix.previewTaskDetails">子任务详情</div>
+            <div class="task-block-grid compact" id="matrix-created-task-blocks"></div>
+            <div class="workflow-actions">
+              <button class="btn btn-primary" id="matrix-go-queue" type="button">
+                <i class="ti ti-player-play button-icon" aria-hidden="true"></i>
+                <span data-i18n="matrix.nextQueue">打开到模型训练台</span>
+              </button>
+              <button class="btn btn-outline-secondary" id="matrix-go-monitor" type="button">
+                <i class="ti ti-activity button-icon" aria-hidden="true"></i>
+                <span data-i18n="matrix.nextMonitor">刷新任务块</span>
+              </button>
+            </div>
+          </div>
+          <input name="config" type="hidden" />
+          <input name="out" type="hidden" />
+        </form>
+      </section>
+
+      <section class="view" id="view-queue" data-view="queue" aria-label="Queue runner">
+        <form class="card panel focus-panel" id="queue-form">
+          <div class="panel-heading">
+            <h2 data-i18n="queue.title">模型训练台</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="queue.tag">训练项目</span>
+          </div>
+          <p class="panel-note" data-i18n="queue.note">打开训练项目后，可以在这里执行、暂停、重跑失败任务，并用任务块查看训练进度。</p>
+          <div class="field-row queue-options">
+            <label>
+              <span data-i18n="field.maxTasks">本次最多执行</span>
+              <input class="form-control" name="max_tasks" type="number" min="1" />
+            </label>
+            <label class="check-field">
+              <input name="dry_run" type="checkbox" />
+              <span data-i18n="queue.dryRun">预检查，不真正训练</span>
+            </label>
+            <label class="check-field">
+              <input name="rerun_failed" type="checkbox" />
+              <span data-i18n="queue.rerunFailed">重跑失败任务</span>
+            </label>
+          </div>
+          <div class="queue-action-row">
+            <button class="btn btn-primary" type="submit">
+              <i class="ti ti-player-play button-icon" aria-hidden="true"></i>
+              <span data-i18n="queue.run">开始训练</span>
+            </button>
+            <button class="btn btn-outline-secondary" id="queue-resume" type="button">
+              <i class="ti ti-player-skip-forward button-icon" aria-hidden="true"></i>
+              <span data-i18n="queue.resume">继续训练</span>
+            </button>
+            <button class="btn btn-outline-secondary danger-action" id="queue-stop" type="button" disabled>
+              <i class="ti ti-player-stop button-icon" aria-hidden="true"></i>
+              <span data-i18n="queue.stop">停止当前训练</span>
+            </button>
+          </div>
+          <p class="job-status" id="queue-job-status">Queue job: idle</p>
+          <details class="advanced-fields">
+            <summary data-i18n="advanced.paths">高级路径</summary>
+            <label>
+              <span data-i18n="field.taskFolder">任务文件夹</span>
+              <input class="form-control" name="tasks" autocomplete="off" />
+            </label>
+          </details>
+        </form>
+        <section class="card monitor">
+          <div class="results-heading">
+            <div>
+              <h2 data-i18n="monitor.title">任务进度</h2>
+              <p id="task-summary">No task folder loaded</p>
+            </div>
+            <form class="monitor-form" id="task-monitor-form">
+              <button class="btn btn-outline-secondary" type="submit">
+                <i class="ti ti-refresh button-icon" aria-hidden="true"></i>
+                <span data-i18n="monitor.refresh">刷新任务</span>
+              </button>
+              <details class="advanced-fields compact-details">
+                <summary data-i18n="advanced.paths">高级路径</summary>
+                <label>
+                  <span data-i18n="field.taskFolder">任务文件夹</span>
+                  <input class="form-control" name="tasks" autocomplete="off" />
+                </label>
+              </details>
+            </form>
+          </div>
+          <div class="task-counts" id="task-counts"></div>
+          <div class="task-block-grid" id="task-blocks"></div>
+          <div class="table-wrap">
+            <table class="table table-vcenter card-table">
+              <thead>
+                <tr>
+                  <th data-i18n="table.task">任务</th>
+                  <th data-i18n="table.status">状态</th>
+                  <th data-i18n="table.fold">Fold</th>
+                  <th data-i18n="table.window">窗口</th>
+                  <th data-i18n="table.model">模型</th>
+                  <th data-i18n="table.activation">激活</th>
+                  <th data-i18n="table.metric">指标</th>
+                  <th data-i18n="table.log">日志</th>
+                </tr>
+              </thead>
+              <tbody id="task-rows">
+                <tr class="empty-row">
+                  <td colspan="8" data-i18n="monitor.empty">刷新任务文件夹以查看状态。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="log-toolbar">
+            <label>
+              <span data-i18n="field.logType">日志类型</span>
+              <select class="form-select" id="task-log-kind">
+                <option value="queue_stdout">训练输出</option>
+                <option value="queue_stderr">错误输出</option>
+                <option value="status">status</option>
+                <option value="summary">summary</option>
+                <option value="manifest">manifest</option>
+              </select>
+            </label>
+            <p id="task-log-path" data-i18n="monitor.selectTask">选择一行任务查看日志。</p>
+          </div>
+          <pre id="task-log-output" aria-live="polite"></pre>
+        </section>
+      </section>
+
+      <section class="view" id="view-results" data-view="results" aria-label="Results workflow">
+        <div class="workspace-hero">
+          <div>
+            <h2 data-i18n="results.title">结果筛选</h2>
+            <p data-i18n="results.subtitle">训练结束后，在这里读取当前训练结果，按指标挑出值得继续验证的模型组合。</p>
+          </div>
+          <button class="btn btn-primary" id="final-candidate-demo" type="button">
+            <i class="ti ti-flag button-icon" aria-hidden="true"></i>
+            <span data-i18n="results.finalCandidate">设为最终候选</span>
+          </button>
+        </div>
+
+        <section class="result-workflow" aria-label="Result selection workflow">
+          <section class="card panel result-step result-source-panel">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="results.stepSource">1. 读取训练结果</h2>
+                <p data-i18n="results.stepSourceNote">优先使用当前工程的训练任务和结果表；普通用户不需要填写路径。</p>
+              </div>
+              <span class="badge bg-teal-lt tag" data-i18n="results.currentProject">当前工程</span>
+            </div>
+            <div class="result-source-grid">
+              <div class="result-source-card">
+                <span data-i18n="results.trainingTasks">训练任务</span>
+                <strong id="result-task-source">尚未读取</strong>
+              </div>
+              <div class="result-source-card">
+                <span data-i18n="results.resultTable">结果表</span>
+                <strong id="result-registry-source">尚未生成</strong>
+              </div>
+              <div class="result-source-card">
+                <span data-i18n="results.readyState">筛选状态</span>
+                <strong id="result-selection-state">等待训练结果</strong>
+              </div>
+            </div>
+            <div class="result-action-row">
+              <button class="btn btn-outline-secondary" id="results-use-current" type="button">
+                <i class="ti ti-refresh button-icon" aria-hidden="true"></i>
+                <span data-i18n="results.useCurrent">使用当前训练结果</span>
+              </button>
+              <form class="inline-scan-form" id="scan-form">
+                <button class="btn btn-primary" type="submit">
+                  <i class="ti ti-scan button-icon" aria-hidden="true"></i>
+                  <span data-i18n="scan.run">扫描训练结果</span>
+                </button>
+                <details class="advanced-fields">
+                  <summary data-i18n="advanced.paths">高级路径</summary>
+                  <label>
+                    <span data-i18n="field.taskFolder">任务文件夹</span>
+                    <input class="form-control" name="runs" autocomplete="off" />
+                  </label>
+                  <label>
+                    <span data-i18n="field.registryOutput">结果表输出文件夹</span>
+                    <input class="form-control" name="out" autocomplete="off" />
+                  </label>
+                </details>
+              </form>
+            </div>
+          </section>
+
+          <form class="card panel result-step" id="candidate-form">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="results.stepRule">2. 选择筛选规则</h2>
+                <p data-i18n="results.stepRuleNote">回归任务通常看 RMSE 或 MAE，数值越低越好；分类任务通常看 balanced accuracy，越高越好。</p>
+              </div>
+              <span class="badge bg-teal-lt tag">Top models</span>
+            </div>
+            <div class="metric-choice-grid" aria-label="Metric choices">
+              <button class="metric-choice active" type="button" data-metric-choice="val_rmse" data-direction-choice="min">
+                <strong>验证 RMSE</strong>
+                <span data-i18n="results.metricRmse">回归误差，越低越好</span>
+              </button>
+              <button class="metric-choice" type="button" data-metric-choice="val_mae" data-direction-choice="min">
+                <strong>验证 MAE</strong>
+                <span data-i18n="results.metricMae">平均绝对误差，越低越好</span>
+              </button>
+              <button class="metric-choice" type="button" data-metric-choice="val_balanced_accuracy" data-direction-choice="max">
+                <strong>Balanced Accuracy</strong>
+                <span data-i18n="results.metricBalancedAccuracy">分类均衡准确率，越高越好</span>
+              </button>
+            </div>
+            <div class="result-pick-row">
+              <span data-i18n="results.keepHowMany">保留前几名</span>
+              <button class="top-choice active" type="button" data-top-choice="5">Top 5</button>
+              <button class="top-choice" type="button" data-top-choice="10">Top 10</button>
+              <button class="top-choice" type="button" data-top-choice="20">Top 20</button>
+            </div>
+            <button class="btn btn-primary result-primary-action" type="submit">
+              <i class="ti ti-stars button-icon" aria-hidden="true"></i>
+              <span data-i18n="candidate.select">筛选最佳模型</span>
+            </button>
+            <details class="advanced-fields">
+              <summary data-i18n="results.advancedRule">高级：手动指标和输出路径</summary>
+              <div class="field-row">
+                <label>
+                  <span data-i18n="field.metric">指标</span>
+                  <input class="form-control" name="metric" autocomplete="off" />
+                </label>
+                <label>
+                  <span data-i18n="field.top">Top</span>
+                  <input class="form-control" name="top" type="number" min="1" value="5" />
+                </label>
+                <label>
+                  <span data-i18n="field.direction">方向</span>
+                  <select class="form-select" name="direction">
+                    <option value="auto">auto</option>
+                    <option value="max">max</option>
+                    <option value="min">min</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                <span data-i18n="field.registryCsv">Registry CSV</span>
+                <input class="form-control" name="registry" autocomplete="off" />
+              </label>
+              <label>
+                <span data-i18n="field.candidateOutput">候选输出</span>
+                <input class="form-control" name="out" autocomplete="off" />
+              </label>
+            </details>
+          </form>
+
+          <form class="card panel result-step result-advanced-panel" id="aggregate-form">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="aggregate.title">参数组合对比</h2>
+                <p data-i18n="results.aggregateNote">想看哪类参数整体更好时再用，例如比较不同光谱窗口、模型结构或预处理方式。</p>
+              </div>
+              <span class="badge bg-teal-lt tag" data-i18n="results.optional">可选</span>
+            </div>
+            <div class="field-row">
+              <label>
+                <span data-i18n="field.metric">指标</span>
+                <input class="form-control" name="metric" autocomplete="off" />
+              </label>
+              <label>
+                <span data-i18n="field.groupBy">分组</span>
+                <input class="form-control" name="group_by" autocomplete="off" />
+              </label>
+              <label>
+                <span data-i18n="field.direction">方向</span>
+                <select class="form-select" name="direction">
+                  <option value="auto">auto</option>
+                  <option value="max">max</option>
+                  <option value="min">min</option>
+                </select>
+              </label>
+            </div>
+            <button class="btn btn-primary" type="submit">
+              <i class="ti ti-grid-dots button-icon" aria-hidden="true"></i>
+              <span data-i18n="aggregate.run">生成参数对比</span>
+            </button>
+            <details class="advanced-fields">
+              <summary data-i18n="advanced.paths">高级路径</summary>
+              <label>
+                <span data-i18n="field.registryCsv">Registry CSV</span>
+                <input class="form-control" name="registry" autocomplete="off" />
+              </label>
+              <label>
+                <span data-i18n="field.aggregateOutput">聚合输出</span>
+                <input class="form-control" name="out" autocomplete="off" />
+              </label>
+            </details>
+          </form>
+        </section>
+      </section>
+
+      <section class="view" id="view-workshop" data-view="workshop" aria-label="Model workshop">
+        <section class="card panel focus-panel">
+          <div class="panel-heading">
+            <h2 data-i18n="workshop.title">模型工坊</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="workshop.tag">增强实验</span>
+          </div>
+          <p class="panel-note" data-i18n="workshop.note">基于已有候选模型继续测试后端神经网络，例如冻结 1D-CNN backbone 后接入 MLP。</p>
+          <div class="workshop-layout">
+            <div class="workshop-card active">
+              <strong data-i18n="workshop.freezeMlp">冻结 CNN + MLP</strong>
+              <span data-i18n="workshop.freezeMlpNote">提取 CNN embedding，只训练后端 MLP。</span>
+            </div>
+            <div class="workshop-card">
+              <strong data-i18n="workshop.finetuneMlp">微调 CNN + MLP</strong>
+              <span data-i18n="workshop.finetuneMlpNote">允许 backbone 小学习率微调。</span>
+            </div>
+            <div class="workshop-card">
+              <strong data-i18n="workshop.ensemble">Ensemble 融合</strong>
+              <span data-i18n="workshop.ensembleNote">比较多个成员平均或投票。</span>
+            </div>
+          </div>
+          <div class="option-grid four">
+            <label><span data-i18n="workshop.layers">MLP 层数</span><select class="form-select" id="workshop-mlp-layers"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+            <label><span data-i18n="workshop.width">隐藏层宽度</span><select class="form-select" id="workshop-hidden-width"><option value="64">64</option><option value="128" selected>128</option><option value="256">256</option></select></label>
+            <label><span data-i18n="workshop.activation">激活函数</span><select class="form-select" id="workshop-activation"><option value="relu">ReLU</option><option value="gelu" selected>GELU</option><option value="silu">SiLU</option></select></label>
+            <label><span data-i18n="workshop.dropout">Dropout</span><select class="form-select" id="workshop-dropout"><option value="0.1">0.1</option><option value="0.3" selected>0.3</option><option value="0.5">0.5</option></select></label>
+          </div>
+          <div class="workshop-current-plan" id="workshop-current-plan"></div>
+          <div class="workflow-actions">
+            <button class="btn btn-primary" type="button"><i class="ti ti-plus button-icon" aria-hidden="true"></i><span data-i18n="workshop.create">生成工坊实验项目</span></button>
+            <button class="btn btn-outline-secondary" type="button" data-view-jump="queue"><i class="ti ti-player-play button-icon" aria-hidden="true"></i><span data-i18n="workshop.openTraining">打开到模型训练台</span></button>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-outputs" data-view="outputs" aria-label="Model outputs">
+        <section class="card panel focus-panel">
+          <div class="panel-heading">
+            <h2 data-i18n="outputs.title">模型成果</h2>
+            <span class="badge bg-teal-lt tag" data-i18n="outputs.tag">图表与报告</span>
+          </div>
+          <p class="panel-note" data-i18n="outputs.note">这里展示当前模型的训练成果。回归任务会显示预测值 vs 实测值、R2、RMSE、MAE 和残差图；分类任务显示混淆矩阵和每类指标。</p>
+          <div class="context-strip output-context">
+            <div>
+              <span data-i18n="context.dataset">当前训练数据</span>
+              <strong id="output-dataset-code">尚未确认</strong>
+            </div>
+            <div>
+              <span>Registry</span>
+              <strong id="output-registry-path">尚未生成</strong>
+            </div>
+          </div>
+          <div class="output-model-picker" id="output-model-picker" aria-label="Model selection"></div>
+          <div class="output-grid">
+            <div class="output-chart regression" id="output-chart">
+              <div id="output-chart-points"></div>
+              <strong id="output-chart-title" data-i18n="outputs.regressionPlot">预测值 vs 实测值</strong>
+            </div>
+            <div class="metric-card"><span id="output-metric-main-label">R2</span><strong id="output-metric-main">--</strong></div>
+            <div class="metric-card"><span id="output-metric-secondary-label">RMSE</span><strong id="output-metric-secondary">--</strong></div>
+            <div class="metric-card"><span id="output-metric-tertiary-label">MAE</span><strong id="output-metric-tertiary">--</strong></div>
+          </div>
+          <div class="output-detail-list" id="output-detail-list"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-console" data-view="console" aria-label="Result console">
+        <section class="card results">
+          <div class="results-heading">
+            <div>
+              <h2 data-i18n="console.title">运行控制台</h2>
+              <p id="result-summary">No action yet</p>
+            </div>
+            <button class="btn btn-outline-secondary" id="clear-results" type="button">
+              <i class="ti ti-x button-icon" aria-hidden="true"></i>
+              <span data-i18n="console.clear">清空</span>
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table class="table table-vcenter card-table">
+              <thead>
+                <tr>
+                  <th data-i18n="console.time">时间</th>
+                  <th data-i18n="console.action">动作</th>
+                  <th data-i18n="console.status">状态</th>
+                  <th data-i18n="console.output">关键输出</th>
+                </tr>
+              </thead>
+              <tbody id="result-rows">
+                <tr class="empty-row">
+                  <td colspan="4" data-i18n="console.empty">运行一个动作后会显示结果。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre id="json-output" aria-live="polite">{}</pre>
+        </section>
+      </section>
+
+      <aside class="log-orb" id="log-orb" aria-label="运行日志">
+        <button class="log-orb-button" id="log-orb-toggle" type="button" aria-expanded="false">
+          <i class="ti ti-activity-heartbeat" aria-hidden="true"></i>
+          <span data-i18n="logOrb.button">日志</span>
+          <b id="log-orb-count">0</b>
+        </button>
+        <section class="log-orb-panel" id="log-orb-panel" hidden>
+          <div class="log-orb-head">
+            <strong data-i18n="logOrb.title">运行日志</strong>
+            <span id="log-orb-summary" data-i18n="logOrb.empty">还没有日志。</span>
+          </div>
+          <label class="log-recorder-path">
+            <span data-i18n="logOrb.path">保存路径</span>
+            <input class="form-control" id="log-recorder-path" type="text" autocomplete="off" />
+          </label>
+          <div class="log-orb-actions">
+            <button class="btn btn-primary" id="log-recorder-start" type="button">
+              <i class="ti ti-player-record button-icon" aria-hidden="true"></i>
+              <span data-i18n="logOrb.start">开始记录</span>
+            </button>
+            <button class="btn btn-outline-secondary" id="log-recorder-stop" type="button" disabled>
+              <i class="ti ti-device-floppy button-icon" aria-hidden="true"></i>
+              <span data-i18n="logOrb.stop">停止并保存</span>
+            </button>
+            <button class="btn btn-outline-secondary" id="log-orb-copy" type="button">
+              <i class="ti ti-copy button-icon" aria-hidden="true"></i>
+              <span data-i18n="logOrb.copy">复制</span>
+            </button>
+            <button class="btn btn-outline-secondary" id="log-orb-clear" type="button">
+              <i class="ti ti-trash button-icon" aria-hidden="true"></i>
+              <span data-i18n="logOrb.clear">清空</span>
+            </button>
+          </div>
+          <p class="log-recorder-status" id="log-recorder-status" data-i18n="logOrb.ready">未开始记录。</p>
+          <ol class="log-orb-events" id="log-orb-events">
+            <li class="is-empty" data-i18n="logOrb.empty">还没有日志。</li>
+          </ol>
+        </section>
+      </aside>
+    </main>
+
+    <dialog class="project-save-dialog" id="project-save-dialog" aria-labelledby="project-save-dialog-title">
+      <div class="project-save-card">
+        <div class="project-save-heading">
+          <i class="ti ti-device-floppy" aria-hidden="true"></i>
+          <div>
+            <strong id="project-save-dialog-title" data-i18n="project.saveDialogTitle">保存工程文件</strong>
+            <p id="project-save-dialog-hint" data-i18n="project.saveDialogHint">输入一个容易识别的工程文件名，系统会保存为 .spectramatrix.json。</p>
+          </div>
+        </div>
+        <label class="project-save-name-field">
+          <span data-i18n="project.saveDialogName">工程文件名</span>
+          <input class="form-control" id="project-save-name" autocomplete="off" />
+        </label>
+        <div class="project-save-dialog-actions">
+          <button class="btn btn-outline-secondary" id="project-save-cancel" type="button">
+            <span data-i18n="project.saveDialogCancel">取消</span>
+          </button>
+          <button class="btn btn-primary" id="project-save-confirm" type="button">
+            <i class="ti ti-device-floppy button-icon" aria-hidden="true"></i>
+            <span data-i18n="project.saveDialogConfirm">保存</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="/static/app.js?v=20260702-matrix-fixed-chip-1" type="module"></script>
+  </body>
+</html>

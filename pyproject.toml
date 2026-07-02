@@ -1,0 +1,8 @@
+[project]
+name = "spectramatrix-workspace"
+version = "0.1.0"
+description = "Workspace for the SpectraMatrix local spectral modeling platform."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["packages/spectral_core/tests"]

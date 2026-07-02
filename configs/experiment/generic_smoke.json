@@ -1,0 +1,26 @@
+{
+  "name": "generic_smoke",
+  "dataset": {
+    "path": "../../examples/generic_csv_classification/data/spectra.csv",
+    "sample_id_column": "sample_id",
+    "target_column": "target"
+  },
+  "task": {
+    "kind": "classification",
+    "target_column": "target"
+  },
+  "split": {
+    "method": "holdout",
+    "test_size": 0.34,
+    "stratify": true,
+    "seed": 7
+  },
+  "preprocess": {
+    "steps": ["snv"]
+  },
+  "model": {
+    "name": "nearest_centroid"
+  },
+  "output_dir": "../../outputs"
+}
+

@@ -1,0 +1,42 @@
+.DS_Store
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Root-level local notes and hidden workspace folders
+/*.md
+!README.md
+!ACKNOWLEDGEMENTS.md
+/.*/
+!/.github/
+
+# macOS launcher/build outputs
+.build/
+dist/*.app/
+launcher/assets/*source*.png
+
+# Local runtime artifacts and private experiment outputs
+datasets/
+diagnostics/
+imports/
+logs/
+matrices/
+outputs/
+projects/
+results/
+
+# Local demo data is useful in the lab, but should not be published by default.
+configs/dataset/*realistic*
+configs/matrix/*demo_good_route*
+configs/matrix/*realistic*
+examples/**/data/*.csv
+examples/yam_sulfite/
+演示数据集/
+
+# Keep checked-in documentation/templates even when their parent output folders are ignored.
+!dist/*.command

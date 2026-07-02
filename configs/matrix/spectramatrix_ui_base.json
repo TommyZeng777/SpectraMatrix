@@ -1,0 +1,23 @@
+{
+  "name": "spectramatrix_ui_base",
+  "status": "ui_base_template",
+  "description": "SpectraMatrix UI base matrix. No adjustable factor is preselected; the UI adds target, split, and model factors only when the user selects them.",
+  "dataset_config": "../../examples/yam_sulfite/configs/dataset_yamsulfcnn_dl154.json",
+  "fixed": {
+    "task": "ppm",
+    "cv_fold": 1,
+    "window_id": "WFULL_500_2500",
+    "preprocess_id": "raw_standard",
+    "model_id": "cnn3",
+    "pooling_id": "POOL0",
+    "activation_id": "relu",
+    "kernel_size": 5,
+    "dropout": 0.2,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "batch_size": 16,
+    "epochs": 2,
+    "seed": 20260616
+  },
+  "grid": {}
+}

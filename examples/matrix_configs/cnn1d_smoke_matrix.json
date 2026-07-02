@@ -1,0 +1,21 @@
+{
+  "name": "cnn1d_smoke",
+  "fixed": {
+    "dataset_dir": "datasets/frozen/linkcode_smoke",
+    "target_column": "so2_ppm",
+    "task_kind": "regression",
+    "feature_prefix": "w",
+    "epochs": 2,
+    "batch_size": 2
+  },
+  "grid": {
+    "activation": ["relu", "gelu"],
+    "normalization": ["batch_norm", "layer_norm"],
+    "channels": [[8], [8, 16]],
+    "kernel_size": [3],
+    "dropout": [0.1],
+    "learning_rate": [0.001],
+    "seed": [1, 2]
+  }
+}
+
