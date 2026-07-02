@@ -1,6 +1,6 @@
 [project]
 name = "spectramatrix-workspace"
-version = "0.1.0"
+version = "0.1.1"
 description = "Workspace for the SpectraMatrix local spectral modeling platform."
 requires-python = ">=3.10"
 

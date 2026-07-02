@@ -10,6 +10,18 @@ SpectraMatrix
 
 The public repository should include source code, templates, and small configuration examples. It should not include private laboratory data, generated training tasks, diagnostic logs, local project files, or model outputs.
 
+For the full source/data boundary, read:
+
+```text
+docs/DATA_BOUNDARY.md
+```
+
+For Windows-specific setup notes, read:
+
+```text
+docs/WINDOWS_ADAPTATION.md
+```
+
 ## 1. Clone And Enter The Project
 
 ```bash
@@ -24,6 +36,21 @@ cd "/path/to/SpectraMatrix"
 ```
 
 ## 2. Create A Python Environment
+
+Fast path on macOS or Linux:
+
+```bash
+./script/quickstart.sh
+```
+
+Fast path on Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\script\quickstart.ps1
+```
+
+Manual setup is below.
 
 Use Python 3.10 or newer.
 
@@ -114,6 +141,8 @@ logs/launcher_backend.log
 
 Logs are ignored by Git and should not be published.
 
+The macOS launcher is not the Windows path. Windows users should run the FastAPI workbench directly as described in `docs/WINDOWS_ADAPTATION.md`.
+
 ## 5. Prepare CSV Files
 
 The normal import workflow uses two CSV files.
@@ -123,6 +152,14 @@ Templates are in:
 ```text
 CSV导入模板/
 ```
+
+For a first smoke test without private data, generate synthetic CSV files:
+
+```bash
+python script/generate_sample_csv.py --out datasets/sample_csv
+```
+
+The generated files are fake and ignored by Git.
 
 ### 5.1 Spectral Matrix CSV
 
@@ -310,6 +347,12 @@ Before pushing to GitHub, inspect what will be committed:
 git status --short
 git add -A
 git diff --cached --stat
+```
+
+Run the public-tree audit:
+
+```bash
+python script/audit_public_tree.py
 ```
 
 Confirm that `LICENSE`, `README.md`, and `ACKNOWLEDGEMENTS.md` are included in the first commit.

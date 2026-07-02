@@ -1,0 +1,13 @@
+{
+  "data_root": "/absolute/path/to/private-spectramatrix-assets",
+  "imports_dir": "imports",
+  "matrices_dir": "matrices",
+  "projects_dir": "projects",
+  "results_dir": "results",
+  "diagnostics_dir": "diagnostics",
+  "notes": [
+    "Copy this file outside Git or adapt it for your local machine.",
+    "Do not commit files that point to private laboratory datasets.",
+    "Use CSV导入模板/ for public template structure."
+  ]
+}

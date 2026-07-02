@@ -18,6 +18,12 @@ The public repository is intended to include source code, CSV templates, configu
 
 Use `CSV导入模板/` to prepare your own spectral matrix CSV and supervision CSV.
 
+For the detailed source/data boundary, see:
+
+```text
+docs/DATA_BOUNDARY.md
+```
+
 ## What It Does
 
 - Imports wide spectral CSV files and supervision CSV files linked by `sample_link_code`.
@@ -64,6 +70,38 @@ SpectraMatrix keeps the experiment lifecycle explicit:
 └── diagnostics/                   # Local diagnostic logs, ignored by default
 ```
 
+## Fast Start
+
+For macOS or Linux:
+
+```bash
+./script/quickstart.sh
+```
+
+For Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\script\quickstart.ps1
+```
+
+The quickstart scripts create a local virtual environment, install the editable Python package with API support, and generate a tiny synthetic CSV dataset under `datasets/sample_csv/`. That folder is ignored by Git and contains fake data only.
+
+After quickstart, start the workbench:
+
+```bash
+PYTHONPATH=packages/spectral_core/src spectral-api
+```
+
+Windows PowerShell:
+
+```powershell
+$env:PYTHONPATH = "packages/spectral_core/src"
+spectral-api
+```
+
+Then open `http://127.0.0.1:8765/`.
+
 ## Installation
 
 Use Python 3.10 or newer.
@@ -83,6 +121,12 @@ For a more detailed setup and running guide, see:
 
 ```text
 docs/RUNNING.md
+```
+
+Windows users should also read:
+
+```text
+docs/WINDOWS_ADAPTATION.md
 ```
 
 ## Start The Local Workbench
@@ -308,6 +352,14 @@ logs/
 outputs/
 dist/
 ```
+
+Before pushing public changes, run:
+
+```bash
+python script/audit_public_tree.py
+```
+
+This checks Git-tracked files for blocked runtime folders, local absolute paths, private experiment markers, and agent-workspace traces.
 
 ## Third-Party Assets
 
